@@ -6,8 +6,8 @@ import seaborn as sns
 
 
 # Load CSV files from GitHub URL
-car_df = pd.read_csv("https://raw.githubusercontent.com/your-username/streamlit_colab_analysis/main/cleaned_car_details_df.csv")
-price_df = pd.read_csv("https://raw.githubusercontent.com/your-username/streamlit_colab_analysis/main/cleaned_price_cardetails_df.csv")
+car_df = pd.read_csv("https://raw.githubusercontent.com/keyrouter132/streamlit_colab_analysis/main/cleaned_car_details_df.csv")
+price_df = pd.read_csv("https://raw.githubusercontent.com/keyrouter132/streamlit_colab_analysis/main/cleaned_price_cardetails_df.csv")
 
 # Load Data
 st.title("Car Sales Analysis Dashboard")
