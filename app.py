@@ -9,58 +9,65 @@ import seaborn as sns
 car_df = pd.read_csv("https://raw.githubusercontent.com/keyrouter132/streamlit_colab_analysis/main/cleaned_car_details_df.csv")
 price_df = pd.read_csv("https://raw.githubusercontent.com/keyrouter132/streamlit_colab_analysis/main/cleaned_price_cardetails_df.csv")
 
-# Load Data
+
+# Load datasets
 st.title("Car Sales Analysis Dashboard")
 
-# Load CSV files
 @st.cache_data
 def load_data():
-    car_details = pd.read_csv("cleaned_car_details_df.csv")
-    price_details = pd.read_csv("cleaned_price_cardetails_df.csv")
-    return car_details, price_details
+    car_df = pd.read_csv("cleaned_car_details_df.csv")
+    price_df = pd.read_csv("cleaned_price_cardetails_df.csv")
+    merged_df = pd.merge(car_df, price_df, on='Car_ID', how='inner')
+    merged_df["Car_Age"] = 2024 - merged_df["Year"]
+    return car_df, price_df, merged_df
 
-car_df, price_df = load_data()
+car_df, price_df, merged_df = load_data()
 
 # Display Data
 st.write("### Car Details Dataset")
 st.dataframe(car_df.head())
 
-st.write("### Price Details Dataset")
-st.dataframe(price_df.head())
-
-# Most Common Car Brands
+# 1. Most Common Car Brands
 st.write("### Most Common Car Brands")
 top_brands = car_df['Brand'].value_counts().head(5)
 st.bar_chart(top_brands)
 
-# Average Price by Car Brand
-st.write("### Average Price by Car Brand")
-avg_price = price_df.groupby("Brand")["Price_USD"].mean().sort_values(ascending=False)
-st.bar_chart(avg_price)
+# 2. Brand and Transmission Types
+st.write("### Transmission Types by Brand")
+brand_transmission_df = car_df.groupby("Brand")["Transmission"].unique().reset_index()
+st.dataframe(brand_transmission_df)
 
-# Correlation Between Car Age and Price
-st.write("### Correlation: Car Age vs Price")
-merged_df = pd.merge(car_df, price_df, on='Car_ID', how='inner')
-merged_df["Car_Age"] = 2024 - merged_df["Year"]
-
+# 3. Top Locations with Most Cars Listed
+st.write("### Locations with Most Cars Listed")
+top_locations = car_df['Location'].value_counts().head(10)
 fig, ax = plt.subplots()
-sns.scatterplot(x=merged_df["Car_Age"], y=merged_df["Price_USD"], ax=ax)
-plt.xlabel("Car Age")
-plt.ylabel("Price (USD)")
+sns.barplot(x=top_locations.index, y=top_locations.values, palette='cividis', ax=ax)
+plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Transmission Type Analysis
-st.write("### Transmission Type Distribution")
-transmission_counts = merged_df["Transmission"].value_counts()
-st.bar_chart(transmission_counts)
+# 4. Count of Cars by Fuel Type
+st.write("### Count of Cars by Fuel Type")
+fuel_counts = merged_df["Fuel_Type"].value_counts()
+st.bar_chart(fuel_counts)
 
-# Price Trends Over Years
-st.write("### Price Trends Over Years")
-price_trends = merged_df.groupby("Year")["Price_USD"].mean()
-st.line_chart(price_trends)
+# 5. Engine Size vs. Average Price
+st.write("### Engine Size vs. Average Price")
+fig, ax = plt.subplots()
+sns.barplot(x="Engine_cc", y="Price_USD", data=merged_df, palette='cividis', ax=ax)
+st.pyplot(fig)
 
+# 6. Depreciation: Average Price of Cars by Age
 st.write("### Depreciation: Average Price of Cars by Age")
-age_price = merged_df.groupby("Car_Age")["Price_USD"].mean()
-st.line_chart(age_price)
+fig, ax = plt.subplots()
+sns.lineplot(x="Car_Age", y="Price_USD", data=merged_df, marker="o", color="green", ax=ax)
+st.pyplot(fig)
+
+# 7. Number of Cars Sold Each Year
+st.write("### Number of Cars Sold Each Year")
+yearly_sales = car_df["Year"].value_counts().reset_index()
+yearly_sales.columns = ["Year", "Number of Listings"]
+fig, ax = plt.subplots()
+sns.barplot(x="Year", y="Number of Listings", data=yearly_sales, palette='cividis', ax=ax)
+st.pyplot(fig)
 
 st.write("### Done! 🚀")
